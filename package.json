@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
     "db:init": "node scripts/init-db.mjs"
   },
   "dependencies": {
@@ -25,6 +26,8 @@
     "@types/pg": "8.11.10",
     "@types/react": "18.3.5",
     "@types/react-dom": "18.3.0",
+    "eslint": "8.57.1",
+    "eslint-config-next": "14.2.35",
     "typescript": "5.6.2"
   },
   "engines": {
