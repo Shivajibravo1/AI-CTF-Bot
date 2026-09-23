@@ -162,9 +162,11 @@ Pick these up when asked; each is self-contained:
    created as Private (see DEPLOY_GUIDE Step 5). The UI does not render screenshots
    today; if it ever needs to, add an authorized serving route that verifies operator
    ownership and fetches the blob server-side with `get(pathname, { access: "private" })`.
-3. **state_json updates** - the reasoning model should extract new room facts
-   (ports/creds/foothold) and update `session.state_json`. Today state is stored but not
-   auto-updated from answers. Add a schema-validated update step (see `RoomState` type).
+3. **state_json updates** - DONE. `lib/state.ts` extracts new room facts after each
+   answer, validates them against a Zod `RoomState` schema, merges (arrays union+dedupe,
+   scalars overwrite), and the reason route persists them to `session.state_json`.
+   Fail-soft and toggle-able via `STATE_EXTRACTION_ENABLED`. Extraction tokens are
+   recorded to the cost meter.
 4. **Idle GPU sweep** - a scheduled job to stop any GPU pod with no open session
    (prevents surprise billing). Only for the self-hosted path.
 5. **Delete room / history** - UI + route to delete a session and its data.

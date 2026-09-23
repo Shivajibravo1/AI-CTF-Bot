@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getOperatorId } from "@/lib/auth";
 import { query, queryOne } from "@/lib/db";
 import { reasonStream } from "@/lib/reason";
+import { updateRoomState } from "@/lib/state";
 import { recordUsage } from "@/lib/cost";
 import type { MessageRow, RoomState } from "@/lib/types";
 
@@ -72,6 +73,20 @@ export async function POST(req: NextRequest) {
           [session_id, result.text]
         );
         await recordUsage(session_id, "reason", result.tokensIn, result.tokensOut);
+
+        // Extract new room facts from this exchange and persist the merged
+        // state. Schema-validated and fail-soft: never breaks the flow.
+        const prevState = sess.state_json || {};
+        const extraction = await updateRoomState(prevState, history, question, result.text);
+        if (extraction.tokensIn || extraction.tokensOut) {
+          await recordUsage(session_id, "reason", extraction.tokensIn, extraction.tokensOut);
+        }
+        if (extraction.changed) {
+          await query(
+            `UPDATE session SET state_json = $1 WHERE id = $2`,
+            [JSON.stringify(extraction.state), session_id]
+          );
+        }
       } catch (err) {
         console.error("[reason] post-stream persist failed", err);
       }
