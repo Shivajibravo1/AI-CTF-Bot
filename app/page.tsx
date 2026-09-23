@@ -91,6 +91,27 @@ function Workspace({ email }: { email: string }) {
     await loadSessions();
   }
 
+  async function deleteSession(s: SessionRow, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!confirm(`Delete room "${s.room_name}" and all its data? This cannot be undone.`)) return;
+    const r = await fetch("/api/session/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: s.id }),
+    });
+    if (r.ok) {
+      if (active?.id === s.id) {
+        setActive(null);
+        setMessages([]);
+        setTotals(null);
+        setEcho(null);
+      }
+      await loadSessions();
+    } else {
+      alert("Could not delete the room.");
+    }
+  }
+
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !active) return;
@@ -172,8 +193,21 @@ function Workspace({ email }: { email: string }) {
               className={`session-item ${active?.id === s.id ? "active" : ""}`}
               onClick={() => selectSession(s)}
             >
-              <div>{s.room_name}</div>
-              <div className="sub">{s.platform} · {s.closed_at ? "closed" : "open"}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div>{s.room_name}</div>
+                  <div className="sub">{s.platform} · {s.closed_at ? "closed" : "open"}</div>
+                </div>
+                <button
+                  className="ghost"
+                  title="Delete room"
+                  aria-label={`Delete room ${s.room_name}`}
+                  style={{ padding: "2px 8px", fontSize: 12, lineHeight: 1 }}
+                  onClick={(e) => deleteSession(s, e)}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           ))}
           {sessions.length === 0 && <div className="attach-hint">No rooms yet.</div>}

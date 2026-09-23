@@ -1,4 +1,4 @@
-import { put } from "@vercel/blob";
+import { put, del } from "@vercel/blob";
 
 // Stores a screenshot/file in Vercel Blob with PRIVATE access and returns a
 // reference the app persists. Private blobs are not reachable by URL: the
@@ -25,6 +25,20 @@ export async function storeAttachment(
     token,
   });
   return blob.url;
+}
+
+// Best-effort deletion of stored blobs (used when a room is deleted, so private
+// screenshots do not orphan). Never throws: a failed delete must not block the
+// room deletion. Skips silently when no token or no urls are present.
+export async function deleteAttachments(urls: string[]): Promise<void> {
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  const clean = urls.filter((u) => typeof u === "string" && u.length > 0);
+  if (!token || clean.length === 0) return;
+  try {
+    await del(clean, { token });
+  } catch (err) {
+    console.error("[blob] deleteAttachments failed", err);
+  }
 }
 
 function sanitize(name: string): string {

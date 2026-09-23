@@ -169,7 +169,10 @@ Pick these up when asked; each is self-contained:
    recorded to the cost meter.
 4. **Idle GPU sweep** - a scheduled job to stop any GPU pod with no open session
    (prevents surprise billing). Only for the self-hosted path.
-5. **Delete room / history** - UI + route to delete a session and its data.
+5. **Delete room / history** - DONE. `POST /api/session/delete` verifies ownership,
+   stops the GPU (self-host), deletes the room's Blob screenshots (best-effort), then
+   deletes the session (message/attachment/usage cascade via FK). Sidebar has a per-room
+   delete button with a confirm dialog.
 6. **Manual text paste as input** - UI currently uploads screenshots and asks questions;
    add an explicit "paste terminal text" path that skips vision.
 7. **Refusal-rate + error logging surfacing** - persist refusal/error counts for tuning.
