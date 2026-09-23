@@ -8,9 +8,19 @@ declare global {
 }
 
 function makePool(): Pool {
-  const connectionString = process.env.POSTGRES_URL;
+  // Accept whichever name the storage provider injects. Vercel Postgres uses
+  // POSTGRES_URL; the Neon (and other) marketplace integrations often use
+  // DATABASE_URL / *_UNPOOLED. Any valid Postgres connection string works.
+  const connectionString =
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.DATABASE_URL_UNPOOLED ||
+    process.env.POSTGRES_URL_NON_POOLING;
   if (!connectionString) {
-    throw new Error("POSTGRES_URL is not set. Add a Vercel Postgres store or set the variable.");
+    throw new Error(
+      "No Postgres connection string found. Set POSTGRES_URL (or DATABASE_URL) from your database provider."
+    );
   }
   return new Pool({
     connectionString,

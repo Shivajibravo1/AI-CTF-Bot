@@ -18,9 +18,14 @@ try {
   // no .env.local; rely on real environment
 }
 
-const connectionString = process.env.POSTGRES_URL;
+const connectionString =
+  process.env.POSTGRES_URL ||
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_PRISMA_URL ||
+  process.env.DATABASE_URL_UNPOOLED ||
+  process.env.POSTGRES_URL_NON_POOLING;
 if (!connectionString) {
-  console.error("POSTGRES_URL is not set. Set it in .env.local or your shell.");
+  console.error("No Postgres connection string found. Set POSTGRES_URL or DATABASE_URL in .env.local or your shell.");
   process.exit(1);
 }
 
