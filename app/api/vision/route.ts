@@ -5,6 +5,7 @@ import { query, queryOne } from "@/lib/db";
 import { storeAttachment } from "@/lib/blob";
 import { readScreenshot } from "@/lib/vision";
 import { recordUsage } from "@/lib/cost";
+import { enforceLimits } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -31,6 +32,18 @@ export async function POST(req: NextRequest) {
     [session_id, userId]
   );
   if (!owned) return NextResponse.json({ error: "not found" }, { status: 404 });
+
+  // Rate + spend limits before any paid model work.
+  const limit = await enforceLimits(userId, "vision");
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: limit.message },
+      {
+        status: limit.status,
+        headers: limit.retryAfter ? { "Retry-After": String(limit.retryAfter) } : undefined,
+      }
+    );
+  }
 
   // Decode and store the screenshot privately.
   let blobUrl = "";

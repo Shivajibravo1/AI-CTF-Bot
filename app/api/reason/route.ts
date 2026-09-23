@@ -5,6 +5,7 @@ import { query, queryOne } from "@/lib/db";
 import { reasonStream } from "@/lib/reason";
 import { updateRoomState } from "@/lib/state";
 import { recordUsage } from "@/lib/cost";
+import { enforceLimits } from "@/lib/ratelimit";
 import type { MessageRow, RoomState } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,15 @@ export async function POST(req: NextRequest) {
     [session_id, userId]
   );
   if (!sess) return new Response("not found", { status: 404 });
+
+  // Rate + spend limits before any paid model work.
+  const limit = await enforceLimits(userId, "reason");
+  if (!limit.ok) {
+    return new Response(limit.message, {
+      status: limit.status,
+      headers: limit.retryAfter ? { "Retry-After": String(limit.retryAfter) } : undefined,
+    });
+  }
 
   const history = await query<MessageRow>(
     `SELECT * FROM message WHERE session_id = $1 ORDER BY created_at ASC`,

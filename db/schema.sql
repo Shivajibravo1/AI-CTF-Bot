@@ -52,3 +52,16 @@ CREATE TABLE IF NOT EXISTS usage (
 );
 
 CREATE INDEX IF NOT EXISTS idx_usage_session ON usage(session_id);
+
+-- Fixed-window request counters for rate limiting the paid model routes.
+-- One row per (operator, action+unit, truncated window). Old rows are swept
+-- opportunistically by the limiter.
+CREATE TABLE IF NOT EXISTS rate_limit (
+  user_id      BIGINT NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
+  action       TEXT NOT NULL,                       -- e.g. vision:minute | reason:day
+  window_start TIMESTAMPTZ NOT NULL,
+  count        INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (user_id, action, window_start)
+);
+
+CREATE INDEX IF NOT EXISTS idx_rate_limit_window ON rate_limit(window_start);
