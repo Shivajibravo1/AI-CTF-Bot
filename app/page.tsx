@@ -37,6 +37,8 @@ function Workspace({ email }: { email: string }) {
   const [busy, setBusy] = useState(false);
   const [streaming, setStreaming] = useState("");
   const [echo, setEcho] = useState<string | null>(null);
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -137,6 +139,27 @@ function Workspace({ email }: { email: string }) {
     } finally {
       setBusy(false);
       if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  async function addPastedText() {
+    if (!active || !pasteText.trim() || busy) return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/note", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: active.id, text: pasteText.trim() }),
+      });
+      if (r.ok) {
+        setPasteText("");
+        setPasteOpen(false);
+        await loadMessages(active.id);
+      } else {
+        alert("Could not add the text.");
+      }
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -291,13 +314,28 @@ function Workspace({ email }: { email: string }) {
                 <button className="ghost" disabled={busy} onClick={() => fileRef.current?.click()}>
                   Screenshot
                 </button>
+                <button className="ghost" disabled={busy} onClick={() => setPasteOpen((v) => !v)}>
+                  Paste text
+                </button>
                 <button disabled={busy || !question.trim()} onClick={ask}>
                   {busy ? "…" : "Ask"}
                 </button>
               </div>
               <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
+              {pasteOpen && (
+                <div className="row" style={{ marginTop: 8, alignItems: "flex-start" }}>
+                  <textarea
+                    value={pasteText}
+                    placeholder="Paste terminal output here (e.g. nmap results) to add it to the room without a screenshot…"
+                    onChange={(e) => setPasteText(e.target.value)}
+                  />
+                  <button disabled={busy || !pasteText.trim()} onClick={addPastedText}>
+                    {busy ? "…" : "Add"}
+                  </button>
+                </div>
+              )}
               <div className="attach-hint">
-                Enter to send · Shift+Enter for newline · Screenshot to add a screen, then it echoes back what it read
+                Enter to send · Shift+Enter for newline · Screenshot reads a screen · Paste text adds terminal output directly (no screenshot needed)
               </div>
             </div>
           </>

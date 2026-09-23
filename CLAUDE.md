@@ -173,8 +173,10 @@ Pick these up when asked; each is self-contained:
    stops the GPU (self-host), deletes the room's Blob screenshots (best-effort), then
    deletes the session (message/attachment/usage cascade via FK). Sidebar has a per-room
    delete button with a confirm dialog.
-6. **Manual text paste as input** - UI currently uploads screenshots and asks questions;
-   add an explicit "paste terminal text" path that skips vision.
+6. **Manual text paste as input** - DONE. `POST /api/note` inserts pasted terminal text
+   as a role 'vision' evidence message (no model call, no cost), so it feeds room context
+   and state extraction like a screenshot echo. UI has a "Paste text" toggle with a
+   textarea beside the Screenshot button.
 7. **Refusal-rate + error logging surfacing** - persist refusal/error counts for tuning.
 
 Always run `npm run build` after changes and keep it green.
