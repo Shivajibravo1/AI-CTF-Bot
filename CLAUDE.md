@@ -157,9 +157,11 @@ Pick these up when asked; each is self-contained:
 1. **GPU lifecycle** (`lib/gpu.ts`) - `startPod`/`stopPod` are stubs. Fill in the chosen
    provider's start/stop API (e.g. RunPod) once the owner decides to self-host. Only
    needed for the self-hosted reasoning path.
-2. **Private Blob** (`lib/blob.ts`) - currently `access: "public"` with random suffix.
-   Switch to private access once confirmed the owner's Blob plan supports it, and serve
-   screenshots through a signed/authorized route.
+2. **Private Blob** (`lib/blob.ts`) - DONE. Uploads use `access: "private"` on
+   `@vercel/blob` >= 2, so screenshots are not reachable by URL. The store must be
+   created as Private (see DEPLOY_GUIDE Step 5). The UI does not render screenshots
+   today; if it ever needs to, add an authorized serving route that verifies operator
+   ownership and fetches the blob server-side with `get(pathname, { access: "private" })`.
 3. **state_json updates** - the reasoning model should extract new room facts
    (ports/creds/foothold) and update `session.state_json`. Today state is stored but not
    auto-updated from answers. Add a schema-validated update step (see `RoomState` type).

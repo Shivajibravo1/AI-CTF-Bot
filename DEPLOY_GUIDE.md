@@ -92,7 +92,11 @@ are set. Adjust them to your providers' real prices so the cost meter is accurat
 
 1. In Vercel: **Storage** tab -> **Create** -> **Postgres**. Accept defaults. Vercel
    automatically adds `POSTGRES_URL` to your project.
-2. **Storage** tab -> **Create** -> **Blob**. Vercel adds `BLOB_READ_WRITE_TOKEN`.
+2. **Storage** tab -> **Create** -> **Blob**. Choose **Private** access when the
+   store creation dialog asks (the app stores screenshots as private blobs; a
+   public store will reject the uploads). If you only see the option on the CLI,
+   run `vercel blob create-store ctf-screenshots --access private`. Vercel adds
+   `BLOB_READ_WRITE_TOKEN`.
 3. Create the database tables: the easiest way without a terminal is to open the
    Postgres store in Vercel, use its **Query** tab, paste the contents of
    `db/schema.sql` from your repo, and run it once.
@@ -139,8 +143,9 @@ You have two paths. Start with the simple one.
 - **Authorized targets only.** This tool is for TryHackMe, Hack The Box, and your own
   labs. It suggests commands; you run them.
 - **Cost meter** shows spend per room. It is a display, not a hard limit.
-- **Screenshots** are stored in your own Vercel Blob. See `lib/blob.ts` if you want to
-  switch to fully private access once your plan supports it.
+- **Screenshots** are stored in your own Vercel Blob with **private** access, so
+  they are not reachable by URL and can only be read server-side with your store
+  token. Make sure the Blob store was created as Private (Step 5).
 - If the vision model ever fails, just paste the terminal text instead - it still works.
 
 Stuck on any step? Tell me which step number and what you see, and I will walk you

@@ -1,7 +1,13 @@
 import { put } from "@vercel/blob";
 
-// Stores a screenshot/file privately in Vercel Blob and returns its URL.
-// Access is "private" so no public URL is exposed.
+// Stores a screenshot/file in Vercel Blob with PRIVATE access and returns a
+// reference the app persists. Private blobs are not reachable by URL: the
+// object can only be fetched server-side with the store token. CTF screenshots
+// can contain IPs, hashes and credentials, so public access is not used.
+//
+// Requires a PRIVATE Vercel Blob store and @vercel/blob >= 2 (the version that
+// added `access: "private"`). Provision the store with private access
+// (`vercel blob create-store <name> --access private`).
 export async function storeAttachment(
   filename: string,
   data: Buffer | Uint8Array | ArrayBuffer,
@@ -13,7 +19,7 @@ export async function storeAttachment(
   }
   const body = data instanceof ArrayBuffer ? Buffer.from(data) : data;
   const blob = await put(`ctf/${Date.now()}-${sanitize(filename)}`, body, {
-    access: "public", // NOTE: set to "private" once your Blob plan supports it; see README.
+    access: "private", // Not publicly reachable; fetch server-side with the token.
     contentType,
     addRandomSuffix: true,
     token,

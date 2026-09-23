@@ -11,7 +11,7 @@
     "db:init": "node scripts/init-db.mjs"
   },
   "dependencies": {
-    "@vercel/blob": "0.23.4",
+    "@vercel/blob": "^2.8.0",
     "next": "^14.2.35",
     "next-auth": "4.24.7",
     "openai": "4.67.3",
