@@ -52,7 +52,7 @@ export async function reasonStream(
   state: RoomState,
   history: MessageRow[]
 ): Promise<{ stream: AsyncIterable<string>; done: Promise<ReasonResult> }> {
-  const model = process.env.REASON_MODEL || "WhiteRabbitNeo/WhiteRabbitNeo-V3-7B";
+  const model = process.env.REASON_MODEL || "WhiteRabbitNeo/Llama-3.1-WhiteRabbitNeo-2-8B";
   const openai = client();
   const context = buildContext(state, history);
 

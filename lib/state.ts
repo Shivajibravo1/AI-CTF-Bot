@@ -143,7 +143,7 @@ export async function updateRoomState(
   if (!enabled()) return base;
 
   try {
-    const model = process.env.REASON_MODEL || "WhiteRabbitNeo/WhiteRabbitNeo-V3-7B";
+    const model = process.env.REASON_MODEL || "WhiteRabbitNeo/Llama-3.1-WhiteRabbitNeo-2-8B";
     const openai = client();
     const currentStateText = Object.keys(prev).length
       ? JSON.stringify(prev)
